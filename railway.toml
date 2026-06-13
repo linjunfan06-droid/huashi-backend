@@ -1,0 +1,2 @@
+[deploy]
+preDeployCommand = "prisma db push --accept-data-loss"

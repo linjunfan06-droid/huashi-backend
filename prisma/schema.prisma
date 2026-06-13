@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  phone     String   @unique
+  nickname  String   @default("花识用户")
+  avatar    String?
+  token     String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  plants Plant[]
+}
+
+model VerificationCode {
+  id        String   @id @default(cuid())
+  phone     String
+  code      String
+  expireAt  DateTime
+  createdAt DateTime @default(now())
+}
+
+model Plant {
+  id             String   @id @default(cuid())
+  userId         String?
+  name           String
+  scientificName String?
+  family         String?
+  description    String
+  careLight      String?
+  careWater      String?
+  careTemperature String?
+  careSoil       String?
+  careHumidity   String?
+  careFertilizer String?
+  careTips       String?
+  imageUrl       String?
+  confidence     Float    @default(0)
+  identifiedAt   DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user          User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chatMessages  ChatMessage[]
+  wateringLogs  WateringLog[]
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  plantId   String?
+  role      String   // 'user' | 'assistant'
+  content   String
+  createdAt DateTime @default(now())
+
+  plant Plant? @relation(fields: [plantId], references: [id], onDelete: SetNull)
+}
+
+model WateringLog {
+  id        String   @id @default(cuid())
+  plantId   String
+  wateredAt DateTime @default(now())
+  note      String?  // optional note about the watering
+  createdAt DateTime @default(now())
+
+  plant Plant @relation(fields: [plantId], references: [id], onDelete: Cascade)
+}

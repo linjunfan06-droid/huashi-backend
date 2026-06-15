@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  phone     String   @unique
+  nickname  String   @default("花识用户")
+  avatar    String?
+  token     String?  @unique
+  isAdmin   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  plants    Plant[]
+  posts     Post[]
+  comments  Comment[]
+  likes     Like[]
+}
+
+model VerificationCode {
+  id        String   @id @default(cuid())
+  phone     String
+  code      String
+  expireAt  DateTime
+  createdAt DateTime @default(now())
+}
+
+model Plant {
+  id             String   @id @default(cuid())
+  userId         String?
+  name           String
+  scientificName String?
+  family         String?
+  description    String
+  careLight      String?
+  careWater      String?
+  careTemperature String?
+  careSoil       String?
+  careHumidity   String?
+  careFertilizer String?
+  careTips       String?
+  imageUrl       String?
+  confidence      Float    @default(0)
+  source          String?  @default("identify") // "identify" 或 "manual"
+  identifiedAt    DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user          User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chatMessages  ChatMessage[]
+  wateringLogs  WateringLog[]
+  posts         Post[]
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  plantId   String?
+  role      String   // 'user' | 'assistant'
+  content   String
+  createdAt DateTime @default(now())
+
+  plant Plant? @relation(fields: [plantId], references: [id], onDelete: SetNull)
+}
+
+model WateringLog {
+  id        String   @id @default(cuid())
+  plantId   String
+  wateredAt DateTime @default(now())
+  note      String?  // optional note about the watering
+  createdAt DateTime @default(now())
+
+  plant Plant @relation(fields: [plantId], references: [id], onDelete: Cascade)
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  userId    String
+  content   String
+  images    String   @default("[]") // JSON array of image URLs
+  plantId   String?  // 关联的花园植物ID
+  likeCount Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments Comment[]
+  likes    Like[]
+  plant    Plant?    @relation(fields: [plantId], references: [id], onDelete: SetNull)
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+}

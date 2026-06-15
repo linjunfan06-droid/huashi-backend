@@ -39,19 +39,8 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: '缺少评论ID' }, { status: 400 })
   }
 
-  // 删除评论并更新帖子评论数
-  const comment = await db.comment.findUnique({ where: { id } })
-  if (!comment) {
-    return NextResponse.json({ error: '评论不存在' }, { status: 404 })
-  }
-
-  await db.$transaction([
-    db.comment.delete({ where: { id } }),
-    db.post.update({
-      where: { id: comment.postId },
-      data: { commentCount: { decrement: 1 } },
-    }),
-  ])
+  // 删除评论
+  await db.comment.delete({ where: { id } })
 
   return NextResponse.json({ message: '删除成功' })
 }

@@ -60,14 +60,15 @@ model Plant {
 
 model ChatMessage {
   id        String   @id @default(cuid())
+  userId    String?
   plantId   String?
   role      String   // 'user' | 'assistant'
   content   String
   createdAt DateTime @default(now())
 
-  plant Plant? @relation(fields: [plantId], references: [id], onDelete: SetNull)
+  user  User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plant Plant?  @relation(fields: [plantId], references: [id], onDelete: SetNull)
 }
-
 model WateringLog {
   id        String   @id @default(cuid())
   plantId   String

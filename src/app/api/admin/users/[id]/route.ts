@@ -31,14 +31,16 @@ export async function PUT(req: Request) {
   })
 }
 
-export async function DELETE(req: Request) {
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const admin = await getAdminFromRequest(req)
   if (!admin) {
     return NextResponse.json({ error: '无管理员权限' }, { status: 403 })
   }
 
-  const { searchParams } = new URL(req.url)
-  const id = searchParams.get('id')
+  const { id } = await params
 
   if (!id) {
     return NextResponse.json({ error: '缺少用户ID' }, { status: 400 })
